@@ -8,9 +8,20 @@ import { colors } from '../../../shared/theme';
 import { showAlert } from '../../../shared/utils/alert';
 import { errorMessage } from '../../../shared/utils/errorMessage';
 import { useAuth } from '../AuthContext';
+import { OAUTH_STATE_KEY } from './oauthState';
+
+function takeSavedState() {
+  try {
+    const v = globalThis.sessionStorage?.getItem(OAUTH_STATE_KEY) ?? null;
+    globalThis.sessionStorage?.removeItem(OAUTH_STATE_KEY);
+    return v;
+  } catch {
+    return null;
+  }
+}
 
 export default function KakaoCallbackScreen() {
-  const { code } = useLocalSearchParams();
+  const { code, state } = useLocalSearchParams();
   const { loginWithKakaoCode } = useAuth();
   const handled = useRef(false); // 인가 코드는 한 번만 쓸 수 있다
 
@@ -22,13 +33,18 @@ export default function KakaoCallbackScreen() {
       router.replace('/login');
       return;
     }
+    if (!state || state !== takeSavedState()) {
+      showAlert('카카오 로그인 실패', '로그인 요청이 올바르지 않아요. 다시 시도해 주세요.');
+      router.replace('/login');
+      return;
+    }
     loginWithKakaoCode(code)
       .then((status) => router.replace(status === 'LOGGED_IN' ? '/' : '/signup'))
       .catch((err) => {
         showAlert('카카오 로그인 실패', errorMessage(err));
         router.replace('/login');
       });
-  }, [code, loginWithKakaoCode]);
+  }, [code, state, loginWithKakaoCode]);
 
   return (
     <Screen bg={colors.white}>

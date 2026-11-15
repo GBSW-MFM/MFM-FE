@@ -10,7 +10,7 @@ export const authApi = {
   me: () => api.get('/users/me'),
 };
 
-export function kakaoAuthorizeUrl() {
-  const q = `client_id=${encodeURIComponent(config.kakaoRestApiKey)}&redirect_uri=${encodeURIComponent(config.kakaoRedirectUri)}&response_type=code`;
+export function kakaoAuthorizeUrl(state) {
+  const q = `client_id=${encodeURIComponent(config.kakaoRestApiKey)}&redirect_uri=${encodeURIComponent(config.kakaoRedirectUri)}&response_type=code&state=${encodeURIComponent(state)}`;
   return `https://kauth.kakao.com/oauth/authorize?${q}`;
 }

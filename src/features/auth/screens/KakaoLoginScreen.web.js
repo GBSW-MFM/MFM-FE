@@ -6,11 +6,16 @@ import { AppText, Header, Screen } from '../../../shared/components';
 import { colors } from '../../../shared/theme';
 import { config } from '../../../shared/config';
 import { kakaoAuthorizeUrl } from '../api';
+import { createOAuthState } from '../oauth';
+import { OAUTH_STATE_KEY } from './oauthState';
 
 export default function KakaoLoginScreen() {
   const ready = Boolean(config.kakaoRestApiKey);
   useEffect(() => {
-    if (ready) window.location.assign(kakaoAuthorizeUrl());
+    if (!ready) return;
+    const state = createOAuthState();
+    try { window.sessionStorage.setItem(OAUTH_STATE_KEY, state); } catch { /* 저장 불가 시 콜백에서 거절된다 */ }
+    window.location.assign(kakaoAuthorizeUrl(state));
   }, [ready]);
 
   return (
